@@ -16,7 +16,7 @@ export function FloatingPreviewPanel() {
       <Rnd
         default={{
           x: Math.max(0, window.innerWidth - 850),
-          y: Math.max(0, Math.min(50, window.innerHeight - 600)),
+          y: 0,
           width: Math.min(850, window.innerWidth),
           height: Math.min(600, window.innerHeight),
         }}

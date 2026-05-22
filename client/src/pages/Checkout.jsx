@@ -46,41 +46,50 @@ function Checkout() {
         config
       );
 
+      const successHandler = async (paymentId) => {
+        try {
+          const orderData = {
+            orderItems: cartItems.map(item => ({ title: item.title, qty: item.quantity, image: item.image, price: item.price, product: item._id || item.id })),
+            shippingAddress: address,
+            paymentMethod: 'Razorpay',
+            itemsPrice: totalPrice,
+            shippingPrice: 0,
+            totalPrice: totalPrice,
+          };
+
+          const { data: savedOrder } = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, orderData, config);
+          
+          await axios.put(`${import.meta.env.VITE_API_URL}/api/orders/${savedOrder._id}/pay`, {
+            id: paymentId,
+            status: "succeeded",
+            update_time: new Date().toISOString(),
+            email_address: user.email
+          }, config);
+
+          toast.success("Payment successful! Order placed. 🎉");
+          clearCart();
+          navigate("/orders");
+        } catch (err) {
+          toast.error("Failed to save order");
+        }
+      };
+
+      // Local Testing Mock Bypass
+      if (orderResponse.isMock) {
+        toast.info("Local Testing: Mocking Razorpay Payment...");
+        setTimeout(() => successHandler('pay_mock_' + Date.now()), 1500);
+        return;
+      }
+
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "mock_key", // Enter the Key ID generated from the Dashboard
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "mock_key",
         amount: orderResponse.amount,
         currency: orderResponse.currency,
         name: "G.C. Store",
         description: "Test Transaction",
         order_id: orderResponse.id,
         handler: async (response) => {
-          try {
-            // Save Order in Backend
-            const orderData = {
-              orderItems: cartItems.map(item => ({ title: item.title, qty: item.quantity, image: item.image, price: item.price, product: item._id || item.id })),
-              shippingAddress: address,
-              paymentMethod: 'Razorpay',
-              itemsPrice: totalPrice,
-              shippingPrice: 0,
-              totalPrice: totalPrice,
-            };
-
-            const { data: savedOrder } = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, orderData, config);
-            
-            // Update Order to Paid
-            await axios.put(`${import.meta.env.VITE_API_URL}/api/orders/${savedOrder._id}/pay`, {
-              id: response.razorpay_payment_id,
-              status: "succeeded",
-              update_time: new Date().toISOString(),
-              email_address: user.email
-            }, config);
-
-            toast.success("Payment successful! Order placed. ??");
-            clearCart();
-            navigate("/orders");
-          } catch (err) {
-            toast.error("Failed to save order");
-          }
+          await successHandler(response.razorpay_payment_id);
         },
         prefill: { name: user.name, email: user.email, contact: "9999999999" },
         theme: { color: "#232f3e" },
@@ -96,7 +105,7 @@ function Checkout() {
     } catch (err) {
       toast.error(`Error initializing payment: ${err.message}`);
     } finally {
-      setProcessing(false);
+      if (!processing) setProcessing(false);
     }
   }, [Razorpay, address, cartItems, clearCart, navigate, totalPrice, user]);
 
@@ -124,7 +133,7 @@ function Checkout() {
           </div>
 
           <div className="bg-white p-6 border rounded-lg shadow-sm flex flex-col items-end">
-            <h2 className="text-xl font-bold text-red-700">Order Total: ?{totalPrice.toFixed(2)}</h2>
+            <h2 className="text-xl font-bold text-red-700">Order Total: ₹{totalPrice.toFixed(2)}</h2>
             <button 
               disabled={processing} type="submit" 
               className={`mt-4 w-full md:w-auto px-10 py-3 rounded-lg font-bold shadow-sm transition-colors ${

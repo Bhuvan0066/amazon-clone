@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../components/ProductCard";
@@ -9,13 +12,6 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("keyword") || "";
-  
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const heroImages = [
-    "https://m.media-amazon.com/images/I/61lwJy4B8PL._SX3000_.jpg",
-    "https://m.media-amazon.com/images/I/71Ie3JXGfVL._SX3000_.jpg",
-    "https://m.media-amazon.com/images/I/71U-Q+N7PXL._SX3000_.jpg",
-  ];
 
   // Fetch Products
   useEffect(() => {
@@ -23,7 +19,7 @@ function Home() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/products?keyword=${keyword}`
+          `${import.meta.env.VITE_API_URL}/api/products?keyword=${keyword}&category=${category}`
         );
         setProducts(response.data);
       } catch (error) {
@@ -33,7 +29,7 @@ function Home() {
       }
     };
     fetchProducts();
-  }, [keyword]);
+  }, [keyword, category]);
 
   // Carousel logic
   useEffect(() => {
@@ -70,7 +66,7 @@ function Home() {
 
       <div className="relative z-20 max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
         
-        {!keyword && (
+        {!keyword && !category && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {categories.map((cat, idx) => (
               <div key={idx} className="bg-white p-5 z-20 flex flex-col h-[400px]">
@@ -78,7 +74,7 @@ function Home() {
                 <div className="flex-1 overflow-hidden flex items-center justify-center">
                    <img src={cat.image} alt={cat.title} className="object-cover max-h-full" />
                 </div>
-                <a href="#" className="text-sm text-[#007185] hover:text-[#C7511F] hover:underline mt-4">Shop now</a>
+                <Link to={`/?category=${cat.title === 'Home & Kitchen' ? 'Home' : cat.title}`} className="text-sm text-[#007185] hover:text-[#C7511F] hover:underline mt-4">Shop now</Link>
               </div>
             ))}
           </div>
@@ -87,7 +83,7 @@ function Home() {
         {/* Products Grid */}
         <div className="bg-white p-4 sm:p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6">
-            {keyword ? `Results for "${keyword}"` : "Featured Products"}
+            {keyword ? `Results for "${keyword}"` : category ? `${category} Products` : "Featured Products"}
           </h2>
 
           {loading ? (
