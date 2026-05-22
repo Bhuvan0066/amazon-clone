@@ -21,17 +21,24 @@ const getProductSuggestions = asyncHandler(async (req, res) => {
 const getProducts = asyncHandler(async (req, res) => {
   const keyword = req.query.keyword
     ? {
-        title: {
-          $regex: req.query.keyword,
-          $options: 'i',
-        },
+        $or: [
+          { title: { $regex: req.query.keyword, $options: 'i' } },
+          { description: { $regex: req.query.keyword, $options: 'i' } },
+        ]
       }
     : {};
 
+  const pageSize = Number(req.query.limit) || 12;
+  const page = Number(req.query.page) || 1;
+
   const category = req.query.category ? { category: req.query.category } : {};
 
-  const products = await Product.find({ ...keyword, ...category });
-  res.json(products);
+  const count = await Product.countDocuments({ ...keyword, ...category });
+  const products = await Product.find({ ...keyword, ...category })
+    .limit(pageSize)
+    .skip(pageSize * (page - 1));
+
+  res.json({ products, page, pages: Math.ceil(count / pageSize) });
 });
 
 // @desc    Fetch single product

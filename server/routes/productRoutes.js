@@ -26,37 +26,27 @@ router.get("/suggestions", async (req, res) => {
 // @desc    Fetch all products with keyword and filtering
 // @route   GET /api/products
 // @access  Public
-// @desc    Get AI-like search suggestions
-// @route   GET /api/products/suggestions
-// @access  Public
-router.get('/suggestions', async (req, res) => {
-  try {
-    const keyword = req.query.keyword;
-    if (!keyword) return res.json([]);
-    const products = await Product.find({
-      title: { $regex: keyword, $options: 'i' }
-    }).select('title').limit(5);
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
 router.get("/", async (req, res) => {
   try {
     const keyword = req.query.keyword
       ? {
-          title: {
-            $regex: req.query.keyword,
-            $options: 'i',
-          },
+          $or: [
+            { title: { $regex: req.query.keyword, $options: 'i' } },
+            { description: { $regex: req.query.keyword, $options: 'i' } },
+          ]
         }
       : {};
-
+    
     const category = req.query.category ? { category: req.query.category } : {};
-
-    const products = await Product.find({ ...keyword, ...category });
-    res.json(products);
+    
+    const pageSize = Number(req.query.limit) || 12;
+    const page = Number(req.query.page) || 1;
+    
+    const count = await Product.countDocuments({ ...keyword, ...category });
+    const products = await Product.find({ ...keyword, ...category })
+      .limit(pageSize).skip(pageSize * (page - 1));
+      
+    res.json({ products, page, pages: Math.ceil(count / pageSize) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

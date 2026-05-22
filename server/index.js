@@ -12,6 +12,7 @@ const productRoutes = require("./routes/productRoutes");
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require("./routes/orderRoutes");
+const uploadRoutes = require('./routes/uploadRoutes');
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
@@ -48,6 +49,10 @@ app.use("/api/products", productRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use("/api/orders", orderRoutes);
+app.use('/api/upload', uploadRoutes);
+
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // Test Route
 app.get("/", (req, res) => {

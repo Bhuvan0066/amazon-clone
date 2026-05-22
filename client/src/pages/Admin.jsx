@@ -11,7 +11,7 @@ function Admin() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [products, setProducts] = useState([]);
   
-  // Add Product Form State
+  const [uploading, setUploading] = useState(false);
   const [newProduct, setNewProduct] = useState({
     title: "", price: "", image: "", category: "", stock: "", description: ""
   });
@@ -31,7 +31,7 @@ function Admin() {
   const fetchProducts = async () => {
     try {
       const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`);
-      setProducts(data);
+      setProducts(data.products || data || []);
     } catch (error) {
       console.error(error);
     }
@@ -47,6 +47,28 @@ function Admin() {
       fetchProducts();
     } catch (error) {
       toast.error("Failed to add product");
+    }
+  };
+
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    setUploading(true);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/upload`, formData, config);
+      setNewProduct({ ...newProduct, image: `${import.meta.env.VITE_API_URL}${data}` });
+      setUploading(false);
+    } catch (error) {
+      console.error(error);
+      setUploading(false);
+      toast.error('Image upload failed');
     }
   };
 
@@ -121,7 +143,11 @@ function Admin() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <input type="text" placeholder="Title" required value={newProduct.title} onChange={e => setNewProduct({...newProduct, title: e.target.value})} className="p-2 border rounded" />
                   <input type="number" placeholder="Price" required value={newProduct.price} onChange={e => setNewProduct({...newProduct, price: e.target.value})} className="p-2 border rounded" />
-                  <input type="text" placeholder="Image URL" required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="p-2 border rounded" />
+                  <div className="flex flex-col gap-2">
+                    <input type="text" placeholder="Image URL (or upload below)" required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="p-2 border rounded" />
+                    <input type="file" onChange={uploadFileHandler} className="p-2 border rounded bg-white" />
+                    {uploading && <span className="text-sm text-blue-500">Uploading...</span>}
+                  </div>
                   <input type="text" placeholder="Category" required value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} className="p-2 border rounded" />
                   <input type="number" placeholder="Stock" required value={newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: e.target.value})} className="p-2 border rounded" />
                   <input type="text" placeholder="Description" required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} className="p-2 border rounded" />

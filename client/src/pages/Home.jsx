@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import axios from "axios";
-import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 
 function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get("keyword") || "";
+  const category = searchParams.get("category") || "";
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const heroImages = [
+    "https://m.media-amazon.com/images/I/61lwJy4B8PL._SX3000_.jpg",
+    "https://m.media-amazon.com/images/I/71Ie3JXGfVL._SX3000_.jpg",
+    "https://m.media-amazon.com/images/I/71U-Q+N7PXL._SX3000_.jpg",
+  ];
 
   // Fetch Products
   useEffect(() => {
@@ -19,9 +26,13 @@ function Home() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/products?keyword=${keyword}&category=${category}`
+          `${import.meta.env.VITE_API_URL}/api/products?keyword=${keyword}&category=${category}&page=${page}`
         );
-        setProducts(response.data);
+        const productsData = response.data.products || response.data || [];
+        setProducts(productsData);
+        if (response.data.pages) {
+          setPages(response.data.pages);
+        }
       } catch (error) {
         console.log(error);
       } finally {
@@ -29,7 +40,7 @@ function Home() {
       }
     };
     fetchProducts();
-  }, [keyword, category]);
+  }, [keyword, category, page]);
 
   // Carousel logic
   useEffect(() => {
@@ -40,10 +51,10 @@ function Home() {
   }, []);
 
   const categories = [
-    { title: "Electronics", image: "https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Dashboard/Fuji_Dash_TV_2X._SY304_CB432517900_.jpg" },
-    { title: "Fashion", image: "https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Dashboard/Fuji_Dash_Beauty_1x._SY304_CB432774351_.jpg" },
-    { title: "Home & Kitchen", image: "https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Dashboard/Fuji_Dash_HomeBedding_Single_Cat_1x._SY304_CB418596953_.jpg" },
-    { title: "Computers", image: "https://images-na.ssl-images-amazon.com/images/G/01/AmazonExports/Fuji/2020/May/Dashboard/Fuji_Dash_PC_1x._SY304_CB431800965_.jpg" },
+    { title: "Electronics", image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&q=80&w=600" },
+    { title: "Fashion", image: "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=600" },
+    { title: "Home & Kitchen", image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=600" },
+    { title: "Computers", image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=600" },
   ];
 
   return (
@@ -107,6 +118,37 @@ function Home() {
             <div className="text-center py-20">
               <h3 className="text-xl font-bold text-gray-700">No products found.</h3>
               <p className="text-gray-500 mt-2">Try checking your spelling or use more general terms</p>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {pages > 1 && !loading && (
+            <div className="flex justify-center mt-10 mb-4 gap-2">
+              <button 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
+              >
+                Previous
+              </button>
+              {[...Array(pages).keys()].map((x) => (
+                <button
+                  key={x + 1}
+                  onClick={() => setPage(x + 1)}
+                  className={`px-4 py-2 border rounded-md ${
+                    x + 1 === page ? "bg-slate-900 text-white" : "hover:bg-gray-50"
+                  }`}
+                >
+                  {x + 1}
+                </button>
+              ))}
+              <button 
+                onClick={() => setPage(p => Math.min(pages, p + 1))}
+                disabled={page === pages}
+                className="px-4 py-2 border rounded-md disabled:opacity-50 hover:bg-gray-50"
+              >
+                Next
+              </button>
             </div>
           )}
         </div>

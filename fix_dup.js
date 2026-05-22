@@ -1,0 +1,1 @@
+const fs = require('fs'); const file = 'd:/amazon-clone/amazon-clone/client/src/pages/Home.jsx'; let c = fs.readFileSync(file, 'utf8'); c = c.replace('const category = searchParams.get(\"category\") || \"\";\r\n  const category = searchParams.get(\"category\") || \"\";', 'const category = searchParams.get(\"category\") || \"\";'); fs.writeFileSync(file, c);
