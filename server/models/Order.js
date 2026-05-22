@@ -68,5 +68,8 @@ const orderSchema = new mongoose.Schema({
     type: Date
   }
 }, { timestamps: true });
+// Add indexes for efficient order queries
+orderSchema.index({ user: 1 });
+orderSchema.index({ isPaid: 1, isDelivered: 1 });
 
 module.exports = mongoose.model('Order', orderSchema);

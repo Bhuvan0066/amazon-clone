@@ -60,5 +60,8 @@ const productSchema = new mongoose.Schema({
 
 // Add text index for fast AI-like autocomplete search
 productSchema.index({ title: 'text', category: 'text' });
+// Add indexes for efficient filtering and sorting
+productSchema.index({ price: 1, ratings: -1 });
+productSchema.index({ category: 1 });
 
-module.exports = mongoose.model("Product", productSchema);
+module.exports = mongoose.model("Product", productSchema);

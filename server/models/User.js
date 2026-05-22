@@ -29,5 +29,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 }, { timestamps: true });
+// Add index for admin queries
+userSchema.index({ isAdmin: 1 });
 
 module.exports = mongoose.model("User", userSchema);

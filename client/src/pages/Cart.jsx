@@ -1,143 +1,92 @@
 import { useCart } from "../context/CartContext";
 import { Link } from "react-router-dom";
+import { Trash2, ShoppingBag, ArrowRight } from "lucide-react";
 
 function Cart() {
   const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } = useCart();
-
   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
   const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
   return (
-    <div className="bg-gray-100 min-h-screen py-6 px-4 md:px-8 max-w-[1500px] mx-auto">
-      <div className="flex flex-col lg:flex-row gap-6">
-        
+    <div className="bg-slate-50 min-h-screen py-8 px-4 md:px-8 max-w-[1500px] mx-auto font-sans">
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Side - Cart Items */}
-        <div className="flex-1 bg-white p-6 shadow-sm">
-          <h1 className="text-2xl md:text-3xl font-medium mb-1">Shopping Cart</h1>
-          <p className="text-[#007185] hover:underline cursor-pointer text-sm mb-4">Deselect all items</p>
-          <div className="text-right text-gray-500 text-sm pb-2 border-b">Price</div>
+        <div className="flex-1 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex justify-between items-end border-b border-slate-200 pb-4 mb-6">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Shopping Cart</h1>
+            <p className="text-slate-500 text-sm font-medium pb-1 hidden sm:block">Price</p>
+          </div>
 
           {cartItems.length === 0 ? (
-            <div className="py-10 text-center">
-              <h2 className="text-2xl font-bold mb-4">Your Amazon Clone Cart is empty.</h2>
-              <Link to="/" className="text-[#007185] hover:text-[#C7511F] hover:underline">
-                Continue shopping
+            <div className="py-16 flex flex-col items-center justify-center text-center">
+              <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+                <ShoppingBag className="w-10 h-10 text-slate-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Your cart is empty</h2>
+              <p className="text-slate-500 mb-8 max-w-md">Looks like you haven't added anything to your cart yet. Explore our top products and find something you love!</p>
+              <Link to="/" className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-8 rounded-full transition-colors shadow-lg shadow-primary-600/30">
+                Continue Shopping
               </Link>
             </div>
           ) : (
-            <div className="space-y-6 mt-4">
+            <div className="space-y-8 mt-4">
               {cartItems.map((item) => (
-                <div key={item._id || item.id} className="flex flex-col sm:flex-row gap-6 pb-6 border-b border-gray-200">
-                  {/* Image */}
-                  <div className="w-full sm:w-1/4 max-w-[180px] self-center sm:self-start">
-                    <img
-                      src={item.image || item.images?.[0]}
-                      alt={item.title}
-                      className="w-full h-auto object-contain max-h-48"
-                    />
+                <div key={item._id || item.id} className="flex flex-col sm:flex-row gap-6 pb-8 border-b border-slate-100 group">
+                  <div className="w-full sm:w-1/4 max-w-[180px] self-center sm:self-start bg-slate-50 rounded-xl p-4 flex items-center justify-center">
+                    <img src={item.image || item.images?.[0]} alt={item.title} className="w-full h-auto object-contain max-h-40 mix-blend-multiply transition-transform group-hover:scale-105" />
                   </div>
-
-                  {/* Details */}
-                  <div className="flex-1">
-                    <div className="flex justify-between">
-                      <Link to={`/product/${item._id || item.id}`} className="text-lg md:text-xl font-medium text-[#007185] hover:text-[#C7511F] hover:underline line-clamp-2 pr-4">
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-between items-start gap-4">
+                      <Link to={"/product/" + (item._id || item.id)} className="text-xl font-bold text-slate-800 hover:text-primary-600 transition-colors line-clamp-2">
                         {item.title}
                       </Link>
-                      <div className="text-xl font-bold whitespace-nowrap">₹{Math.floor(item.price)}</div>
+                      <div className="text-2xl font-bold text-slate-900 whitespace-nowrap">₹{Math.floor(item.price)}</div>
                     </div>
+                    <div className="text-sm font-medium text-emerald-600 mt-2 mb-1">In stock</div>
+                    <div className="text-sm text-slate-500 mb-4">Eligible for FREE Shipping</div>
                     
-                    <div className="text-sm text-[#007600] mt-1 mb-1">In stock</div>
-                    <div className="text-sm text-gray-500 mb-1">Eligible for FREE Shipping</div>
-                    
-                    {item.badges && item.badges.length > 0 && (
-                      <span className="bg-[#C7511F] text-white text-xs px-2 py-0.5 mt-1 inline-block">
-                        {item.badges[0]}
-                      </span>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap items-center gap-4 mt-4 text-sm">
-                      <div className="flex items-center border rounded-lg bg-gray-100 shadow-sm overflow-hidden">
-                        <button 
-                          onClick={() => decreaseQuantity(item._id || item.id)}
-                          className="px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="px-3 py-1 bg-white font-medium min-w-[30px] text-center">
-                          {item.quantity}
-                        </span>
-                        <button 
-                          onClick={() => increaseQuantity(item._id || item.id)}
-                          className="px-3 py-1 hover:bg-gray-200 transition-colors cursor-pointer"
-                        >
-                          +
-                        </button>
+                    <div className="mt-auto flex flex-wrap items-center gap-6">
+                      <div className="flex items-center border border-slate-200 rounded-full bg-white shadow-sm overflow-hidden h-10">
+                        <button onClick={() => decreaseQuantity(item._id || item.id)} className="w-10 h-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors font-medium">-</button>
+                        <span className="w-12 h-full flex items-center justify-center font-semibold text-slate-800 border-x border-slate-100">{item.quantity}</span>
+                        <button onClick={() => increaseQuantity(item._id || item.id)} className="w-10 h-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors font-medium">+</button>
                       </div>
-
-                      <div className="h-4 border-l border-gray-300 hidden sm:block"></div>
-
-                      <button 
-                        onClick={() => removeFromCart(item._id || item.id)}
-                        className="text-[#007185] hover:underline cursor-pointer"
-                      >
-                        Delete
-                      </button>
-
-                      <div className="h-4 border-l border-gray-300 hidden sm:block"></div>
-
-                      <button className="text-[#007185] hover:underline cursor-pointer">
-                        Save for later
-                      </button>
-                      
-                      <div className="h-4 border-l border-gray-300 hidden sm:block"></div>
-
-                      <button className="text-[#007185] hover:underline cursor-pointer">
-                        See more like this
+                      <button onClick={() => removeFromCart(item._id || item.id)} className="flex items-center gap-2 text-slate-500 hover:text-red-500 font-medium text-sm transition-colors">
+                        <Trash2 size={16} /> Remove
                       </button>
                     </div>
                   </div>
                 </div>
               ))}
-              
-              <div className="flex justify-end pt-2">
-                <div className="text-lg md:text-xl">
-                  Subtotal ({totalItems} item{totalItems !== 1 && 's'}): <span className="font-bold">₹{totalPrice.toFixed(2)}</span>
-                </div>
-              </div>
             </div>
           )}
         </div>
 
-        {/* Right Side - Subtotal & Checkout */}
+        {/* Right Side - Checkout Summary */}
         {cartItems.length > 0 && (
-          <div className="w-full lg:w-[300px] flex flex-col gap-4">
-            <div className="bg-white p-5 shadow-sm flex flex-col">
-              <div className="flex gap-2 items-start mb-4">
-                <div className="mt-1 text-white bg-green-700 rounded-full w-4 h-4 flex items-center justify-center text-xs">✓</div>
-                <div className="text-sm text-[#007600]">
-                  Your order is eligible for FREE Delivery. <span className="text-gray-600">Select this option at checkout.</span>
+          <div className="w-full lg:w-[380px] flex flex-col gap-6">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sticky top-24">
+              <h2 className="text-xl font-bold text-slate-900 mb-6">Order Summary</h2>
+              
+              <div className="space-y-4 mb-6 text-slate-600">
+                <div className="flex justify-between">
+                  <span>Items ({totalItems}):</span>
+                  <span className="font-medium text-slate-900">₹{totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping:</span>
+                  <span className="font-medium text-emerald-600">Free</span>
                 </div>
               </div>
 
-              <div className="text-lg md:text-xl mb-4">
-                Subtotal ({totalItems} item{totalItems !== 1 && 's'}): <br/><span className="font-bold">₹{totalPrice.toFixed(2)}</span>
+              <div className="border-t border-slate-200 pt-4 mb-8 flex justify-between items-end">
+                <span className="text-lg font-bold text-slate-900">Order Total:</span>
+                <span className="text-3xl font-black text-slate-900">₹{totalPrice.toFixed(2)}</span>
               </div>
 
-              <div className="flex gap-2 mb-4 items-center">
-                <input type="checkbox" id="gift" className="w-4 h-4 accent-[#007185]" />
-                <label htmlFor="gift" className="text-sm">This order contains a gift</label>
-              </div>
-
-              <Link to="/checkout" className="bg-[#FFD814] hover:bg-[#F7CA00] w-full py-2 rounded-full shadow-sm font-medium transition-colors border border-[#FCD200] block text-center">
-                Proceed to Buy
+              <Link to="/checkout" className="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02]">
+                Proceed to Checkout <ArrowRight size={20} />
               </Link>
-            </div>
-            
-            <div className="bg-white p-4 shadow-sm border border-gray-200 rounded text-sm">
-              <h3 className="font-bold mb-2">EMI Available</h3>
-              <p className="text-gray-600 mb-2">Your order qualifies for EMI with valid credit cards.</p>
-              <a href="#" className="text-[#007185] hover:underline hover:text-[#C7511F]">Learn more</a>
             </div>
           </div>
         )}
